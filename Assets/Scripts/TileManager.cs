@@ -11,11 +11,6 @@ public class TileManager : MonoBehaviour
     private int currentX = 0;
     private int currentY = 0;
     
-    private void Start()
-    {
-        pipeToSwap = Instantiate(tilePrefab, new Vector3(0.0f, 4.0f, 0.0f), Quaternion.identity, this.transform);
-    }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.RightArrow))
@@ -48,6 +43,8 @@ public class TileManager : MonoBehaviour
     public void GenerateTiles(int levelSize)
     {
         if (levelSize > 6 || levelSize < 3) return;
+
+        pipeToSwap = Instantiate(tilePrefab, new Vector3(0.0f, 4.0f, 0.0f), Quaternion.identity, this.transform);
 
         size = levelSize;
         pipes = new GameObject[size, size];
@@ -139,7 +136,7 @@ public class TileManager : MonoBehaviour
             case 6:
                 if (pipeX == size - 1 && pipeY == 0)
                 {
-                    Gameover(true);
+                    FindObjectOfType<GameManager>().Gameover(true);
                     break;
                 }
                 if (pipeX + 1 >= size) break;
@@ -172,10 +169,5 @@ public class TileManager : MonoBehaviour
                 }
                 break;
         }
-    }
-
-    private void Gameover(bool won)
-    {
-        Debug.Log(won ? "YOU WIN!!" : "YOU LOSE");
     }
 }
