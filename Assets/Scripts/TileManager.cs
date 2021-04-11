@@ -5,6 +5,7 @@ using UnityEngine;
 public class TileManager : MonoBehaviour
 {
     [SerializeField] private GameObject tilePrefab;
+    [SerializeField] private GameObject startEndPoint;
     private int size;
     private GameObject[,] pipes;
     private GameObject pipeToSwap;
@@ -38,13 +39,18 @@ public class TileManager : MonoBehaviour
         {
             Swap(pipes[currentX, currentY]); 
         }
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Change();
+        }
     }
 
     public void GenerateTiles(int levelSize)
     {
         if (levelSize > 6 || levelSize < 3) return;
 
-        pipeToSwap = Instantiate(tilePrefab, new Vector3(0.0f, 4.0f, 0.0f), Quaternion.identity, this.transform);
+        pipeToSwap = Instantiate(tilePrefab, new Vector3(1.0f, 4.0f, 0.0f), Quaternion.identity, this.transform);
 
         size = levelSize;
         pipes = new GameObject[size, size];
@@ -63,7 +69,11 @@ public class TileManager : MonoBehaviour
         // Select first pipe
         currentX = 0;
         currentY = 0;
-        pipes[currentX, currentY].GetComponent<SpriteRenderer>().color = Color.yellow;
+        pipes[currentX, currentY].GetComponent<SpriteRenderer>().color = Color.cyan;
+
+        // Generate start point and end point
+        Instantiate(startEndPoint, new Vector3(startPositionX - 1, startPositionY - size + 1, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), this.transform);
+        Instantiate(startEndPoint, new Vector3(startPositionX + size, startPositionY, 0.0f), new Quaternion(0.0f, 0.0f, 180.0f, 0.0f), this.transform);
     }
 
     private void SelectTile(int nextX, int nextY)
@@ -73,7 +83,7 @@ public class TileManager : MonoBehaviour
         // Update pipe index
         currentX = nextX;
         currentY = nextY;
-        pipes[currentX, currentY].GetComponent<SpriteRenderer>().color = Color.yellow;
+        pipes[currentX, currentY].GetComponent<SpriteRenderer>().color = Color.cyan;
     }
 
     private void Swap(GameObject swappingPipe)
@@ -82,17 +92,28 @@ public class TileManager : MonoBehaviour
         swappingPipe.GetComponent<PipeBehavior>().SetType(pipeToSwap.GetComponent<PipeBehavior>().pipeType);
         pipeToSwap.GetComponent<PipeBehavior>().SetType(temp);
         
-        // Start checking path
-        if (pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType == PipeType.C_UL)
-            CheckNextPipe(0, size - 1, 8);
-        else if (pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType == PipeType.S_HORIZONTAL)
-            CheckNextPipe(0, size - 1, 6);
+        CheckPath();
+    }
+
+    private void Change()
+    {
+        if (FindObjectOfType<GameManager>().changeTimes <= 0) return;
+        FindObjectOfType<GameManager>().DecrementChanges();
+
+        PipeType newType;
+        do
+        {
+            newType = (PipeType)Random.Range(0 , (int)PipeType.COUNT);
+        }
+        while (newType == pipes[currentX, currentY].GetComponent<PipeBehavior>().pipeType);
+
+        pipes[currentX, currentY].GetComponent<PipeBehavior>().SetType(newType);
+        
+        CheckPath();
     }
 
     private void CheckPath()
     {
-        if (pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType != PipeType.C_UL && pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType != PipeType.S_HORIZONTAL) return;
-
         if (pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType == PipeType.C_UL)
             CheckNextPipe(0, size - 1, 8);
         else if (pipes[0, size - 1].GetComponent<PipeBehavior>().pipeType == PipeType.S_HORIZONTAL)

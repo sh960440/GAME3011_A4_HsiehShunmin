@@ -9,8 +9,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text timerText;
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private Text resultText;
+    [SerializeField] private Text skillText;
+    [SerializeField] private Text changeText;
+    public int changeTimes = 2;
     private float timer;
-    private int skill;
+    private int skill = 1;
     private bool timing = false;
 
     void Update()
@@ -26,10 +29,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SetTimer(float time)
+    public void StartNewGame(float time)
     {
         timer = time;
         timing = true;
+
+        changeTimes = skill * 2;
+        skillText.text = skill.ToString();
+        changeText.text = changeTimes.ToString();
+    }
+
+    public void SetSkill(float level)
+    {
+        skill = (int)level;
+    }
+
+    public void DecrementChanges()
+    {
+        changeTimes--;
+        changeText.text = changeTimes.ToString();
     }
 
     public void Gameover(bool won)
